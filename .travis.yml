@@ -6,8 +6,13 @@ services:
 jobs:
   include:
     - stage: Pull
-      script: docker pull mono:5.0.1.1
+      script: docker pull p13i/csp
+    
     - stage: Test
-      script: docker run -v $(pwd):/csp -w /csp mono:5.0.1.1 bash csp test
+      script: docker run -v $(pwd):/csp -w /csp p13i/csp bash csp test
+    
     - stage: State
-      script: docker --version && docker ps
+      script:
+        - docker --version
+        - docker images
+        - docker ps
