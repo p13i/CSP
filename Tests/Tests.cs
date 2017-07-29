@@ -30,14 +30,16 @@ namespace ConstraintSatisfactionProblem
                 Action method = testNameAndmethod.Item2;
                 try {
                     
+                    Console.WriteLine($"- Running {name}...");
+
                     method.Invoke();
 
                     // The test passed
                     passingTests++;
-                    Console.WriteLine($"- Test {name} passed.");
+                    Console.WriteLine($"|-- PASS {name}");
 
                 } catch (AssertionException e) {
-                    Console.Error.WriteLine($"- Test {name} failed: {e.Message}");
+                    Console.Error.WriteLine($"|-- FAIL {name}: {e.Message}");
                 }
             }
 
@@ -66,10 +68,15 @@ namespace ConstraintSatisfactionProblem
             // The problem should not yet be solved!
             Assert.That(!problem.Equals(solution));
             
+            Thread updatesThread = new Thread(Tests.PrintUpdates);
+            updatesThread.Start();
+
             // Track the execution time of function
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int numberOfSteps = problem.GenerateSolution();
             watch.Stop();
+
+            updatesThread.Abort();
             
             // Now, the problem should be solved
             Assert.That(problem.Equals(solution));
@@ -78,6 +85,17 @@ namespace ConstraintSatisfactionProblem
             Console.WriteLine($"|-- Finished test in {testDirectoryName} after {numberOfSteps} steps in {watch.ElapsedMilliseconds / 1000} seconds.");
         }
 
+        // Prints updates for the given testName every interval milliseconds
+        // (Run this function on its own thread)
+        public static void PrintUpdates() {
+            int interval = 5000;
+            int updateNumber = 0;
+            while (true) {
+                System.Threading.Thread.Sleep(interval);
+                updateNumber++;
+                Console.WriteLine($"|-- Still working... Elapsed seconds: {updateNumber * interval / 1000}");
+            }
+        }
     }
 
     public static class Assert {
