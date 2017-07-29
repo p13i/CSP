@@ -10,9 +10,13 @@ namespace ConstraintSatisfactionProblem
     /// </summary>
     internal class Tests {
         // These are all the methods that will be run by the Main method
+        // Register new test cases here!
         public static Action[] Methods = { 
             Suite.SanityCheck,
-            Suite.AllPuzzles,
+            () => Suite.RunTestCase("simple-1"),
+            () => Suite.RunTestCase("simple-2"),
+            () => Suite.RunTestCase("expert-1"),
+            () => Suite.RunTestCase("expert-2"),
         };
         
         public static void Main() {
@@ -56,33 +60,24 @@ namespace ConstraintSatisfactionProblem
         }
 
         // Runs all the puzzles found in the Tests/Files directory
-        public static void AllPuzzles() {
-            // Get all directory names
-            string[] allTestDirectories = 
-                Directory.GetDirectories("Tests/Files")
-                .ToArray();
-
-            Console.WriteLine($"Running tests from {allTestDirectories.Length} directories.");
+        public static void RunTestCase(string testDirectoryName) {
+            // Construct the problem and solution copies of the Sudoku puzzle
+            var problem = new RegularSudoku($"Tests/Files/{testDirectoryName}/problem.txt");
+            var solution = new RegularSudoku($"Tests/Files/{testDirectoryName}/solution.txt");
             
-            // Run each test case
-            foreach (string testDirectory in allTestDirectories) {
-                var problem = new RegularSudoku($"{testDirectory}/problem.txt");
-                var solution = new RegularSudoku($"{testDirectory}/solution.txt");
-                
-                // The problem should not yet be solved!
-                Assert.That(!problem.Equals(solution));
-                
-                // Track the execution time of function
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                int numberOfSteps = problem.GenerateSolution();
-                watch.Stop();
-                
-                // Now, the problem should be solved
-                Assert.That(problem.Equals(solution));
+            // The problem should not yet be solved!
+            Assert.That(!problem.Equals(solution));
+            
+            // Track the execution time of function
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            int numberOfSteps = problem.GenerateSolution();
+            watch.Stop();
+            
+            // Now, the problem should be solved
+            Assert.That(problem.Equals(solution));
 
-                // Everything went well...
-                Console.WriteLine($"Finished test in {testDirectory} after {numberOfSteps} steps in {watch.ElapsedMilliseconds / 1000} seconds.");
-            }
+            // Everything went well...
+            Console.WriteLine($"Finished test in {testDirectory} after {numberOfSteps} steps in {watch.ElapsedMilliseconds / 1000} seconds.");
         }
 
     }
