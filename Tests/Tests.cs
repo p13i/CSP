@@ -11,12 +11,13 @@ namespace ConstraintSatisfactionProblem
     internal class Tests {
         // These are all the methods that will be run by the Main method
         // Register new test cases here!
-        public static Action[] Methods = { 
-            Suite.SanityCheck,
-            () => Suite.RunTestCase("simple-1"),
-            () => Suite.RunTestCase("simple-2"),
-            () => Suite.RunTestCase("expert-1"),
-            () => Suite.RunTestCase("expert-2"),
+        public static Tuple<string, Action>[] Methods = { 
+            new Tuple<string, Action>("Sanity Check", Tests.SanityCheck),
+
+            new Tuple<string, Action>("Simple 1", () => Tests.RunTestCase("simple-1")),
+            new Tuple<string, Action>("Simple 2", () => Tests.RunTestCase("simple-2")),
+            new Tuple<string, Action>("Expert 1", () => Tests.RunTestCase("expert-1")),
+            new Tuple<string, Action>("Expert 2", () => Tests.RunTestCase("expert-2")),
         };
         
         public static void Main() {
@@ -24,17 +25,19 @@ namespace ConstraintSatisfactionProblem
             var passingTests = 0;
 
             // Invoke each of the test methods
-            foreach (var method in Tests.Methods) {
+            foreach (var testNameAndmethod in Tests.Methods) {
+                string name = testNameAndmethod.Item1;
+                Action method = testNameAndmethod.Item2;
                 try {
                     
                     method.Invoke();
 
                     // The test passed
                     passingTests++;
-                    Console.WriteLine($"Test {method.Method.Name} passed.");
+                    Console.WriteLine($"- Test {name} passed.");
 
                 } catch (AssertionException e) {
-                    Console.Error.WriteLine($"Test {method.Method.Name} failed: {e.Message}");
+                    Console.Error.WriteLine($"- Test {name} failed: {e.Message}");
                 }
             }
 
@@ -72,7 +75,7 @@ namespace ConstraintSatisfactionProblem
             Assert.That(problem.Equals(solution));
 
             // Everything went well...
-            Console.WriteLine($"Finished test in {testDirectory} after {numberOfSteps} steps in {watch.ElapsedMilliseconds / 1000} seconds.");
+            Console.WriteLine($"|-- Finished test in {testDirectoryName} after {numberOfSteps} steps in {watch.ElapsedMilliseconds / 1000} seconds.");
         }
 
     }
