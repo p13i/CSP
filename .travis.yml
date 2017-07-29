@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: Pull
+      script: docker pull mono:5.0.1.1
+    - stage: Test
+      script: docker run -v $(pwd):/csp -w /csp mono:5.0.1.1 bash csp test
+    - stage: State
+      script: docker --version && docker ps
