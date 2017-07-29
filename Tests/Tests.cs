@@ -48,12 +48,7 @@ namespace ConstraintSatisfactionProblem
                 Console.Error.WriteLine($"{failingTests} tests failed.");
             }
         }
-    }
-
-    /// <summary>
-    /// Contains all the methods that form our test suite
-    /// </summary>
-    public static class Suite {
+        
         // A simple sanity check
         public static void SanityCheck() {
             Assert.That(true == true, "C# booleans have gone crazy!");
