@@ -30,6 +30,7 @@ namespace ConstraintSatisfactionProblem
                 Action method = testNameAndmethod.Item2;
                 try {
                     
+                    Console.WriteLine();
                     Console.WriteLine($"- Running {name}...");
 
                     method.Invoke();
