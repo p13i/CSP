@@ -2,7 +2,7 @@
 
 set -e
 
-function usage() {
+function csp_usage() {
 cat<<- EOF
 
 ${bold}Constraint Satisfaction Problems${normal}
@@ -47,24 +47,31 @@ function config_shell {
     fi
 }
 
+function csp_build() {
+    echo "${bold}${yellow}Building...${normal}"
+    mkdir -p Build/
+    mcs -out:Build/Tests.exe Tests/*.cs Source/*.cs
+    echo "${bold}${green}Done.${normal}"
+}
+
+function csp_test() {
+    echo "${bold}${yellow}Testing...${normal}"
+    mono Build/Tests.exe
+    echo "${bold}${green}Done.${normal}"
+}
+
 config_shell
 
 if [[ $# == 0 ]]; then
-    usage
+    csp_usage
     exit 1
 elif [[ $# == 1 ]]; then
     if [[ "$1" == "build" ]]; then
-        echo "${bold}${yellow}Building...${normal}"
-        mkdir -p Build/
-        mcs -out:Build/Tests.exe Tests/*.cs Source/*.cs
-        echo "${bold}${green}Done.${normal}"
-
+        csp_build
         exit 0
     elif [[ "$1" == "test" ]]; then
-        echo "${bold}${yellow}Testing...${normal}"
-        mono Build/Tests.exe
-        echo "${bold}${green}Done.${normal}"
-
+        csp_build
+        csp_test
         exit 0
     fi
 fi
