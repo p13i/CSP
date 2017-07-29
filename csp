@@ -61,7 +61,14 @@ function csp_build() {
 # Runs the test functionality
 function csp_test() {
     echo "${bold}${yellow}Testing...${normal}"
-    mono Build/Tests.exe
+    echo "#################"
+    echo "### EXECUTION ###"
+    echo "#################"
+    mono --profile=log:coverage Build/Tests.exe
+    echo "###############"
+    echo "### REPORT ###"
+    echo "###############"
+    mprof-report output.mlpd
     echo "${bold}${green}Done.${normal}"
 }
 
