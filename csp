@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage() {
+cat<<- EOF
+
+${bold}Constraint Satisfaction Problems${normal}
+
+${bold}SETUP${normal}
+
+    chmod +x csp.sh
+    alias csp="./csp.sh"
+    
+${bold}USAGE${normal}
+
+    csp [COMMAND]
+
+${bold}COMMANDS${normal}
+
+    (blank)     Print this help dialogue
+    build       Build the program
+    test        Run the tests
+
+${bold}VERSION${normal}
+
+    0.0.0
+
+
+${bold}DEVELOPER${normal}
+
+    Pramod Kotipalli -- https://github.com/p13i
+
+EOF
+}
+
+function config_shell {
+    if test -t 1; then
+        ncolors=$(tput colors)
+        if test -n "$ncolors" && test $ncolors -ge 8; then
+            bold="$(tput bold)"
+            normal="$(tput sgr0)"
+            red="$(tput setaf 1)"
+            green="$(tput setaf 2)"
+            yellow="$(tput setaf 3)"
+        fi
+    fi
+}
+
+config_shell
+
+if [[ $# == 0 ]]; then
+    usage
+    exit 1
+elif [[ $# == 1 ]]; then
+    if [[ "$1" == "build" ]]; then
+        echo "${bold}${yellow}Building...${normal}"
+        mkdir -p Build/
+        mcs -out:Build/Tests.exe Tests/*.cs Source/*.cs
+        echo "${bold}${green}Done.${normal}"
+
+        exit 0
+    elif [[ "$1" == "test" ]]; then
+        echo "${bold}${yellow}Testing...${normal}"
+        mono Build/Tests.exe
+        echo "${bold}${green}Done.${normal}"
+
+        exit 0
+    fi
+fi
+
+echo "${red}Error${normal}: Unknown command: ${@}"
