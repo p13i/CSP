@@ -2,6 +2,7 @@
 
 set -e
 
+# Prints usage for this command line tool
 function csp_usage() {
 cat<<- EOF
 
@@ -9,8 +10,8 @@ ${bold}Constraint Satisfaction Problems${normal}
 
 ${bold}SETUP${normal}
 
-    chmod +x csp.sh
-    alias csp="./csp.sh"
+    chmod +x csp
+    alias csp="./csp"
     
 ${bold}USAGE${normal}
 
@@ -34,6 +35,8 @@ ${bold}DEVELOPER${normal}
 EOF
 }
 
+# Configures the shell with colors if it supports it
+# Based on: https://unix.stackexchange.com/a/10065
 function config_shell {
     if test -t 1; then
         ncolors=$(tput colors)
@@ -47,6 +50,7 @@ function config_shell {
     fi
 }
 
+# Runs the build functionality
 function csp_build() {
     echo "${bold}${yellow}Building...${normal}"
     mkdir -p Build/
@@ -54,26 +58,35 @@ function csp_build() {
     echo "${bold}${green}Done.${normal}"
 }
 
+# Runs the test functionality
 function csp_test() {
     echo "${bold}${yellow}Testing...${normal}"
     mono Build/Tests.exe
     echo "${bold}${green}Done.${normal}"
 }
 
+# Configure this shell
 config_shell
 
+# If there are no arguments, then display the usage
 if [[ $# == 0 ]]; then
     csp_usage
     exit 1
+
+# If there is one argument, then find out if it was a build or test command
 elif [[ $# == 1 ]]; then
+
     if [[ "$1" == "build" ]]; then
+        # Run only the build step
         csp_build
         exit 0
     elif [[ "$1" == "test" ]]; then
+        # Run both the build and test steps
         csp_build
         csp_test
         exit 0
     fi
+
 fi
 
 echo "${red}Error${normal}: Unknown command: ${@}"
