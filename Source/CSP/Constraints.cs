@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace ConstraintSatisfactionProblem
 {
     public interface IConstraint
     {
+        ICollection<string> Variables { get; }
         bool Affects(string variable);
         bool SatisfiedByVariableValueInAssignment(string variable, int proposedValue, IAssignment assignment);
     }
@@ -15,30 +17,32 @@ namespace ConstraintSatisfactionProblem
 
     public class DifferingPairConstraint : IBinaryConstraint
     {
+        public ICollection<string> Variables { get; }
         private readonly string _firstVariable;
         private readonly string _secondVariable;
 
         public DifferingPairConstraint(string firstVariable, string secondVariable)
         {
-            this._firstVariable = firstVariable;
-            this._secondVariable = secondVariable;
+            _firstVariable = firstVariable;
+            _secondVariable = secondVariable;
+            Variables = new []{ _firstVariable, _secondVariable };
         }
 
         public bool Affects(string variable)
         {
-            return this._firstVariable.Equals(variable) || this._secondVariable.Equals(variable);
+            return _firstVariable.Equals(variable) || _secondVariable.Equals(variable);
         }
 
         
         public bool SatisfiedByVariableValueInAssignment(string variable, int proposedValue, IAssignment assignment)
         {
-            if (!this.Affects(variable))
+            if (!Affects(variable))
             {
                 throw new ArgumentException();
             }
-            var otherVariable = this.OtherVariable(variable);
-            return !assignment.ContainsKey(otherVariable) ||
-                   assignment[otherVariable] != proposedValue;
+            
+            string otherVariable = OtherVariable(variable);
+            return !assignment.ContainsKey(otherVariable) || assignment[otherVariable] != proposedValue;
         }
 
         private string OtherVariable(string firstVariable)
@@ -57,15 +61,15 @@ namespace ConstraintSatisfactionProblem
 
     public class AllDifferentConstraint : IConstraint
     {
-        private readonly ISet<string> _variables;
+        public ICollection<string> Variables { get; }
         public AllDifferentConstraint(params string[] variables)
         {
-            this._variables = new HashSet<string>(variables);
+            Variables = new HashSet<string>(variables);
         }
         
         public bool Affects(string variable)
         {
-            return this._variables.Contains(variable);
+            return Variables.Contains(variable);
         }
 
         public bool SatisfiedByVariableValueInAssignment(string variable, int proposedValue, IAssignment assignment)
@@ -73,9 +77,14 @@ namespace ConstraintSatisfactionProblem
             ISet<int> existingValues = new HashSet<int>();
             foreach (var entry in assignment)
             {
-                if (this.Affects(entry.Key))
+                if (Affects(entry.Key))
                 {
                     existingValues.Add(entry.Value);
+
+                    if (entry.Value == proposedValue)
+                    {
+                        return false;
+                    }
                 }
             }
             return !existingValues.Contains(proposedValue);

@@ -1,7 +1,6 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
-using System.IO;
-using System.Linq;
 
 namespace ConstraintSatisfactionProblem
 {
@@ -12,20 +11,20 @@ namespace ConstraintSatisfactionProblem
         // These are all the methods that will be run by the Main method
         // Register new test cases here!
         public static Tuple<string, Action>[] Methods = { 
-            new Tuple<string, Action>("Sanity Check", Tests.SanityCheck),
+            new Tuple<string, Action>("Sanity Check", SanityCheck),
 
-            new Tuple<string, Action>("Simple 1", () => Tests.RunTestCase("simple-1")),
-            new Tuple<string, Action>("Simple 2", () => Tests.RunTestCase("simple-2")),
-            new Tuple<string, Action>("Expert 1", () => Tests.RunTestCase("expert-1")),
-            new Tuple<string, Action>("Expert 2", () => Tests.RunTestCase("expert-2")),
+            new Tuple<string, Action>("Simple 1", () => RunTestCase("simple-1")),
+            new Tuple<string, Action>("Simple 2", () => RunTestCase("simple-2")),
+            new Tuple<string, Action>("Expert 1", () => RunTestCase("expert-1")),
+            new Tuple<string, Action>("Expert 2", () => RunTestCase("expert-2")),
         };
         
         public static void Main() {
             // This is the number of tests that have passed so far
-            var passingTests = 0;
+            int passingTestsCount = 0;
 
             // Invoke each of the test methods
-            foreach (var testNameAndmethod in Tests.Methods) {
+            foreach (Tuple<string, Action> testNameAndmethod in Methods) {
                 string name = testNameAndmethod.Item1;
                 Action method = testNameAndmethod.Item2;
                 try {
@@ -33,10 +32,10 @@ namespace ConstraintSatisfactionProblem
                     Console.WriteLine();
                     Console.WriteLine($"- Running {name}...");
 
-                    method.Invoke();
+                    method();
 
                     // The test passed
-                    passingTests++;
+                    passingTestsCount++;
                     Console.WriteLine($"|-- PASS {name}");
 
                 } catch (AssertionException e) {
@@ -45,13 +44,13 @@ namespace ConstraintSatisfactionProblem
             }
 
             // If the number of tests that passed equals those that we supplied, then this project is okay
-            if (passingTests == Tests.Methods.Length) {
+            if (passingTestsCount == Methods.Length) {
                 Console.WriteLine($"Successfully finished all {Tests.Methods.Length} tests.");
             
             // Else, at least one test failed
             } else {
-                var failingTests = Tests.Methods.Length - passingTests;
-                Console.Error.WriteLine($"{failingTests} tests failed.");
+                var failingTestCount = Methods.Length - passingTestsCount;
+                Console.Error.WriteLine($"{failingTestCount} tests failed.");
             }
         }
         
@@ -63,17 +62,17 @@ namespace ConstraintSatisfactionProblem
         // Runs all the puzzles found in the Tests/Files directory
         public static void RunTestCase(string testDirectoryName) {
             // Construct the problem and solution copies of the Sudoku puzzle
-            var problem = new RegularSudoku($"Tests/Files/{testDirectoryName}/problem.txt");
-            var solution = new RegularSudoku($"Tests/Files/{testDirectoryName}/solution.txt");
+            var problem = new RegularSudoku($"Files/{testDirectoryName}/problem.txt");
+            var solution = new RegularSudoku($"Files/{testDirectoryName}/solution.txt");
             
             // The problem should not yet be solved!
             Assert.That(!problem.Equals(solution));
             
-            Thread updatesThread = new Thread(Tests.PrintUpdates);
+            Thread updatesThread = new Thread(PrintUpdates);
             updatesThread.Start();
 
             // Track the execution time of function
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            Stopwatch watch = Stopwatch.StartNew();
             int numberOfSteps = problem.GenerateSolution();
             watch.Stop();
 
@@ -92,7 +91,7 @@ namespace ConstraintSatisfactionProblem
             int interval = 5000;
             int updateNumber = 0;
             while (true) {
-                System.Threading.Thread.Sleep(interval);
+                Thread.Sleep(interval);
                 updateNumber++;
                 Console.WriteLine($"|-- Still working... Elapsed seconds: {updateNumber * interval / 1000}");
             }

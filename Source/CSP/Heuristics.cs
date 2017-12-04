@@ -17,8 +17,7 @@ namespace ConstraintSatisfactionProblem
         public static string ChooseFirstVariable(IAssignment assignment, CSP csp)
         {
             return csp.VarDomains.Keys
-                .Where(variable => !assignment.IsVariableAssigned(variable))
-                .FirstOrDefault();
+                .FirstOrDefault(variable => !assignment.IsVariableAssigned(variable));
         }
 
         public static string ChooseRandomVariable(IAssignment assignment, CSP csp)

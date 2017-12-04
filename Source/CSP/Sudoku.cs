@@ -8,12 +8,12 @@ namespace ConstraintSatisfactionProblem
 {
     public abstract class Sudoku
     {
-        protected CSP _csp;
+        protected CSP Csp;
         protected abstract int[] Domain { get; }
         protected abstract string[][] Grid { get; }
         protected IAssignment Assignment;
-        protected Dictionary<string, ISet<int>> VariableDomains = new Dictionary<string, ISet<int>>();
-        public static readonly int NO_VALUE = 0;
+        protected IDictionary<string, ICollection<int>> VariableDomains = new Dictionary<string, ICollection<int>>();
+        public static readonly int NoValue = 0;
 
         protected Sudoku()
         {
@@ -21,31 +21,37 @@ namespace ConstraintSatisfactionProblem
             {
                 foreach (var variable in row)
                 {
-                    VariableDomains[variable] = new HashSet<int>(Domain);
+                    VariableDomains[variable] = new List<int>(Domain);
                 }
             }
 
-            this._csp = new CSP(VariableDomains, Constraints);
-            Assignment = new Assignment(this._csp);
+            Csp = new CSP(VariableDomains, Constraints);
+            Assignment = new Assignment(Csp);
         }
 
         protected abstract List<IConstraint> Constraints { get; }
 
         public int GenerateSolution()
         {
-            var solver = new RecusiveBacktrackingSolver(ValueHeuristics.TrivialOrderValues, VariableHeuristics.ChooseFirstVariable);
-            var resultantAssignment = solver.Solve(this._csp, this.Assignment);
-            this.Assignment = resultantAssignment;
-            if (this.Assignment == null) throw new Exception($"Couldn't find solution, even with {solver.NumberOfSteps} steps.");
+            ISolver solver = new RecusiveBacktrackingSolver(ValueHeuristics.TrivialOrderValues, VariableHeuristics.ChooseFirstVariable);
+            IAssignment resultantAssignment = solver.Solve(Csp, Assignment);
+            
+            Assignment = resultantAssignment;
+            
+            if (Assignment == default(IAssignment))
+            {
+                throw new Exception($"Couldn't find solution, even with {solver.NumberOfSteps} steps.");
+            }
+            
             return solver.NumberOfSteps;
         }
 
         public new string ToString()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-            var gridRowNumber = 0;
-            foreach (var row in Grid)
+            int gridRowNumber = 0;
+            foreach (string[] row in Grid)
             {
                 gridRowNumber++;
 
@@ -55,11 +61,15 @@ namespace ConstraintSatisfactionProblem
                 foreach (var variable in row)
                 {
                     gridColumnNumber++;
-                    if (this.Assignment.ContainsKey(variable)) 
-                        sb.Append($"{this.Assignment[variable]} ");
+                    if (Assignment.ContainsKey(variable))
+                    {
+                        sb.Append($"{Assignment[variable]} ");
+                    }
                     else
+                    {
                         sb.Append(". ");
-                    
+                    }
+
                     if (gridColumnNumber % 3 == 0 && gridColumnNumber < 9) {
                         sb.Append("| ");
                     }
@@ -73,20 +83,20 @@ namespace ConstraintSatisfactionProblem
             return sb.ToString();
         }
 
-        public override bool Equals (object obj)
+        public override bool Equals(object obj)
         {   
-            if (obj == null || this.GetType() != obj.GetType())
+            if (obj == null || GetType() != obj.GetType())
             {
                 return false;
             }
             
             Sudoku other = (Sudoku) obj;
-            return other.ToString().Equals(this.ToString());
+            return other.ToString().Equals(ToString());
         }
 
         public override int GetHashCode()
         {
-            return this.ToString().GetHashCode();
+            return ToString().GetHashCode();
         }
     }
 
@@ -113,13 +123,12 @@ namespace ConstraintSatisfactionProblem
         {
             get
             {
-                var constraints = new List<IConstraint>();
+                List<IConstraint> constraints = Grid
+                    .Select(row => new AllDifferentConstraint(row))
+                    .Cast<IConstraint>()
+                    .ToList();
 
                 // Set all row constraints
-                foreach (var row in Grid)
-                {
-                    constraints.Add(new AllDifferentConstraint(row));
-                }
 
                 // Set all column constraints
                 for (var i = 0; i < 9; i++)
@@ -163,43 +172,52 @@ namespace ConstraintSatisfactionProblem
             {
                 for (var j = 0; j < 9; j++)
                 {
-                    if (initialValues[i][j] != NO_VALUE)
-                    {
-                        numberOfCluesProvided++;
+                    if (initialValues[i][j] == NoValue) continue;
+                    
+                    numberOfCluesProvided++;
                         
-                        var letter = (char) ('a' + i);
-                        var variable = $"{letter}{j + 1}";
-                        this.Assignment[variable] = initialValues[i][j];
-                    }
+                    char letter = (char) ('a' + i);
+                    string variable = $"{letter}{j + 1}";
+                    Assignment[variable] = initialValues[i][j];
                 }
             }
 
             if (numberOfCluesProvided <= 16)
             {
                 // https://arxiv.org/abs/1201.0749
-                throw new Exception($"Insufficient number of clues given.");
+                throw new Exception("Insufficient number of clues given.");
             }
         }
 
-        public RegularSudoku(string filename) : this(RegularSudoku.FromFile(filename))
+        public RegularSudoku(string filename) : this(FromFile(filename))
         {
         }
 
         public static int[][] FromFile(string filename) {
-            var rows = new List<int[]>();
+            List<int[]> rows = new List<int[]>();
 
-            var gridString = File.ReadAllLines(filename);
+            string[] gridRows = File.ReadAllLines(filename);
 
-            foreach (string gridRow in gridString) {
-                if (gridRow.StartsWith("-") || gridRow.Length == 0) {
+            foreach (string gridRow in gridRows) {
+                
+                if (gridRow.StartsWith("-") || gridRow.Length == 0) 
+                {
                     continue;
                 }
-                var cleanedRow = gridRow.Replace(" ", "").Replace("|", "").Replace(".", "0");
-                rows.Add(cleanedRow.Select(x => int.Parse(new String(new []{x}))).ToArray());
-            }
-            
+                
+                string cleanedRow = gridRow
+                    .Replace(" ", "")
+                    .Replace("|", "")
+                    .Replace(".", NoValue.ToString());
 
-            var grid = rows.ToArray();
+                int[] rowValues = cleanedRow
+                    .Select(x => int.Parse(x.ToString()))
+                    .ToArray();
+                
+                rows.Add(rowValues);
+            }
+
+            int[][] grid = rows.ToArray();
             return grid;
         }
     }
