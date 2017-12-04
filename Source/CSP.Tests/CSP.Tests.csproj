@@ -69,8 +69,6 @@
     <Content Include="Files\simple-2\solution.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="output.mlpd" />
-    <Content Include="output.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CSP\CSP.csproj">

@@ -55,7 +55,7 @@ namespace ConstraintSatisfactionProblem
             {
                 if (csp.IsVariableValueConsistent(assignment, variable, value))
                 {
-                    assignment[variable] = value;
+                    assignment.Assign(variable, value);
 
                     IAssignment result = RecursiveBacktracking(csp, assignment);
 
@@ -64,7 +64,7 @@ namespace ConstraintSatisfactionProblem
                         return result;
                     }
                     
-                    assignment.Remove(variable);
+                    assignment.Unassign(variable);
                 }
             }
             return null;

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace ConstraintSatisfactionProblem
 {
@@ -11,11 +11,7 @@ namespace ConstraintSatisfactionProblem
         bool SatisfiedByVariableValueInAssignment(string variable, int proposedValue, IAssignment assignment);
     }
 
-    public interface IBinaryConstraint : IConstraint
-    {
-    }
-
-    public class DifferingPairConstraint : IBinaryConstraint
+    public class DifferingPairConstraint : IConstraint
     {
         public ICollection<string> Variables { get; }
         private readonly string _firstVariable;
@@ -42,7 +38,7 @@ namespace ConstraintSatisfactionProblem
             }
             
             string otherVariable = OtherVariable(variable);
-            return !assignment.ContainsKey(otherVariable) || assignment[otherVariable] != proposedValue;
+            return !assignment.IsAssigned(otherVariable) || assignment.GetValue(otherVariable) != proposedValue;
         }
 
         private string OtherVariable(string firstVariable)
@@ -72,22 +68,11 @@ namespace ConstraintSatisfactionProblem
             return Variables.Contains(variable);
         }
 
+        private bool WhereFunc(KeyValuePair<string, int> entry) => Affects(entry.Key);
+        
         public bool SatisfiedByVariableValueInAssignment(string variable, int proposedValue, IAssignment assignment)
         {
-            ISet<int> existingValues = new HashSet<int>();
-            foreach (var entry in assignment)
-            {
-                if (Affects(entry.Key))
-                {
-                    existingValues.Add(entry.Value);
-
-                    if (entry.Value == proposedValue)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return !existingValues.Contains(proposedValue);
+            return assignment.Where(WhereFunc).All(entry => entry.Value != proposedValue);
         }
     }
 }

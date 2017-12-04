@@ -61,9 +61,9 @@ namespace ConstraintSatisfactionProblem
                 foreach (var variable in row)
                 {
                     gridColumnNumber++;
-                    if (Assignment.ContainsKey(variable))
+                    if (Assignment.IsAssigned(variable))
                     {
-                        sb.Append($"{Assignment[variable]} ");
+                        sb.Append($"{Assignment.GetValue(variable)} ");
                     }
                     else
                     {
@@ -178,7 +178,7 @@ namespace ConstraintSatisfactionProblem
                         
                     char letter = (char) ('a' + i);
                     string variable = $"{letter}{j + 1}";
-                    Assignment[variable] = initialValues[i][j];
+                    Assignment.Assign(variable, initialValues[i][j]);
                 }
             }
 

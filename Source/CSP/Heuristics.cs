@@ -6,9 +6,9 @@ namespace ConstraintSatisfactionProblem
 {
     public static class ValueHeuristics
     {
-        public static List<int> TrivialOrderValues(IAssignment assignment, CSP csp, string variable)
+        public static IEnumerable<int> TrivialOrderValues(IAssignment assignment, CSP csp, string variable)
         {
-            return new List<int>(assignment.VariableDomains[variable]);
+            return assignment.GetDomain(variable);
         }
     }
 
@@ -17,13 +17,13 @@ namespace ConstraintSatisfactionProblem
         public static string ChooseFirstVariable(IAssignment assignment, CSP csp)
         {
             return csp.VarDomains.Keys
-                .FirstOrDefault(variable => !assignment.IsVariableAssigned(variable));
+                .FirstOrDefault(variable => !assignment.IsAssigned(variable));
         }
 
         public static string ChooseRandomVariable(IAssignment assignment, CSP csp)
         {
             return csp.VarDomains.Keys
-                .Where(variable => !assignment.IsVariableAssigned(variable))
+                .Where(variable => !assignment.IsAssigned(variable))
                 .OrderBy(variable => Guid.NewGuid())
                 .FirstOrDefault();
         }
