@@ -53,7 +53,7 @@ namespace ConstraintSatisfactionProblem
             string variable = SelectVariableMethod(assignment, csp);
             foreach (int value in OrderValuesMethod(assignment, csp, variable))
             {
-                if (csp.IsVariableValueConsistent(assignment, variable, value))
+                if (assignment.IsVariableValueConsistent(variable, value))
                 {
                     assignment.Assign(variable, value);
 

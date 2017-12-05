@@ -13,12 +13,14 @@ namespace ConstraintSatisfactionProblem
         void Assign(string variable, int value);
         int GetValue(string variable);
         ISet<int> GetDomain(string variable);
+        bool IsVariableValueConsistent(string variable, int proposedValue);
     }
 
     public class Assignment : IAssignment
     {
         #region Instance Properties and Constructor
         
+        public IDictionary<string, IList<IConstraint>> VarConstraints;
         private readonly IDictionary<string, ISet<int>> VariableDomains = new Dictionary<string, ISet<int>>();
         private readonly IDictionary<string, int> VariableValues;
         
@@ -29,6 +31,20 @@ namespace ConstraintSatisfactionProblem
                 VariableDomains[variable] = new HashSet<int>(csp.VarDomains[variable]);
             }
             VariableValues = new Dictionary<string, int>();
+            
+            
+            VarConstraints = new Dictionary<string, IList<IConstraint>>();
+            foreach (IConstraint constraint in csp.Constraints)
+            {
+                foreach (string variable in constraint.Variables)
+                {
+                    if (!VarConstraints.ContainsKey(variable))
+                    {
+                        VarConstraints[variable] = new List<IConstraint>();
+                    }
+                    VarConstraints[variable].Add(constraint);
+                }
+            }
         }
         
         #endregion
@@ -42,8 +58,14 @@ namespace ConstraintSatisfactionProblem
         {
             return VariableDomains[variable];
         }
-        
-        public void Assign(string variable, int value)
+
+        public bool IsVariableValueConsistent(string variable, int proposedValue)
+        {
+            return VarConstraints[variable]
+                .All(constraint => constraint.IsSatisfiedByValue(proposedValue, this));
+        }
+
+        public void  Assign(string variable, int value)
         {
             VariableValues[variable] = value;
         }
