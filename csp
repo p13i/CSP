@@ -54,7 +54,7 @@ function config_shell {
 function csp_build() {
     echo "${bold}${yellow}Building...${normal}"
     mkdir -p Build/
-    mcs -out:Build/Tests.exe Tests/*.cs Source/*.cs
+    mcs -out:Build/Tests.exe Source/*.cs
     echo "${bold}${green}Done.${normal}"
 }
 
